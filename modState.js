@@ -75,6 +75,8 @@ const modState = (() => { // eslint-disable-line
       const rx = new RegExp(`[\\${Object.keys(controlCharacters).join('\\')}]`, 'g');
       return string.replace(rx, (m) => controlCharacters[m]);
     }
+
+    static sysChat(msg) { sendChat(scriptName, `/w gm ${msg}`, null, { noarchive: true }); }
   }
 
   class ChatTable {
@@ -155,26 +157,26 @@ const modState = (() => { // eslint-disable-line
 
   const readState = (path) => {
     const { targetObject } = Helpers.getObjectPath(state, path);
-    if (!targetObject) sendChat(scriptName, `/w gm Bad path "${path}"`);
+    if (!targetObject) Helpers.sysChat(`/w gm Bad path "${path}"`);
     else {
       if (typeof(targetObject) === 'object') {
         const flattened = Helpers.flattenObjectPaths(targetObject);
         ChatTable.createCommandButtons(flattened, path);
         const chatMessage = ChatTable.make(`state/${path.replace(/^\//, '')}`, flattened);
-        sendChat(scriptName, chatMessage);
+        Helpers.sysChat(chatMessage);
       }
       else {
         const output = { [path]: targetObject };
         ChatTable.createCommandButtons(output, '');
         const chatMessage = ChatTable.make(`state/${path.replace(/^\//, '')}`, output, ['Value']);
-        sendChat(scriptName, chatMessage);
+        Helpers.sysChat(chatMessage);
       }
     }
   }
 
   const writeState = (path, newValue, type='auto') => {
     const { targetObject, targetKey } = Helpers.getObjectPath(state, path, true);
-    if (typeof(target) === 'object') sendChat(scriptName, `Can't write to object type at path: ${path}`);
+    if (typeof(target) === 'object') Helpers.sysChat(`Can't write to object type at path: ${path}`);
     else {
       if (type === 'auto') type = Helpers.typeCheck(newValue.trim());
       newValue =
@@ -189,7 +191,7 @@ const modState = (() => { // eslint-disable-line
       targetObject[targetKey] = newValue;
       const msg =  `"${newValue}" written to path: "${path}" with data type "${type}"`;
       const chatMessage = ChatTable.make(`state/${path.replace(/^\//, '')}`, [[msg]], ['Writing value to state...'], 1);
-      sendChat(scriptName, chatMessage);
+      Helpers.sysChat(chatMessage);
     }
   }
 
@@ -207,7 +209,7 @@ const modState = (() => { // eslint-disable-line
         if (commands.write != null) writeState(commands.path, commands.write);
         else readState(commands.path);
       }
-      else sendChat(scriptName, `Bad path or no path supplied.`);
+      else Helpers.sysChat(`Bad path or no path supplied.`);
     }
   }
 
